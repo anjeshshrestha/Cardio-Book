@@ -5,10 +5,11 @@
     <string name="time">Time</string>
     <string name="systolic">Systolic</string>
     <string name="diastolic">Diastolic</string>
-    <string name="heartrate">Heart Rate</string>
+    <string name="heartRate">Heart Rate</string>
     <string name="comment">Comment</string>
     <string name="dateHint">2018/10/30</string>
     <string name="timeHint">23:40</string>
-    <string name="numberHint">120</string>
-    <string name="commentHint">Comments Here</string>
+    <string name="pressureHint">120 mm Hg</string>
+    <string name="heartRateHint">120 bpm</string>
+    <string name="commentHint">None</string>
 </resources>

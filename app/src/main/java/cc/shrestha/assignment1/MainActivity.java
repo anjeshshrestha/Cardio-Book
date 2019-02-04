@@ -30,30 +30,40 @@ public class MainActivity extends AppCompatActivity implements MeasurementAdapte
     private MeasurementItem clickedItem;
     private boolean layout_type = false;
     private static final int SECOND_ACTIVITY_REQUEST_CODE = 0;
-    private static final int THIRD_ACTIVITY_REQUEST_CODE = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mRecyclerView = findViewById(R.id.recylerView);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //initialize arraylist for the logs
+        mMeasurementList = new ArrayList<>();
+        //load all saved logs from file
+        loadMeasurementFromFile();
+
         FloatingActionButton fab = findViewById(R.id.fab);
+        //button to add new log
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, MeasurementActivity.class);
-                intent.putExtra("TYPE", 1); // 1 = add, 2 = clicked
+                intent.putExtra("TYPE", 1); // 1 = add, 2 = edit log
                 startActivityForResult(intent,SECOND_ACTIVITY_REQUEST_CODE);
             }
         });
-        mRecyclerView = findViewById(R.id.recylerView);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        mMeasurementList = new ArrayList<>();
-        loadMeasurementFromFile();
+
     }
 
     private void loadMeasurementFromFile() {
+        //read from file and initialize the logs to the measurement item
         try {
             FileReader input = new FileReader(new File(getFilesDir(), FILENAME));
             Gson gson = new Gson();
@@ -68,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements MeasurementAdapte
         }
     }
     private void saveMeasurementInFile(){
+        //save the arraylist into the save file
         try {
             FileWriter output = new FileWriter(new File(getFilesDir(),FILENAME));
             Gson gson = new Gson();
@@ -80,7 +91,9 @@ public class MainActivity extends AppCompatActivity implements MeasurementAdapte
         }
     }
     public void onItemClick(int position){
-        Log.d("test","should work");
+        //one of the measurement log was clicked
+        //open new activity with log values to be edited/updated
+        //pass values through intent
         Intent measurementIntent = new Intent(this,MeasurementActivity.class);
         clickedItem = mMeasurementList.get(position);
         measurementIntent.putExtra("TYPE",2); // 1 = add, 2 = clicked
@@ -94,35 +107,38 @@ public class MainActivity extends AppCompatActivity implements MeasurementAdapte
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        //save the added data or the updated data
         super.onActivityResult(requestCode, resultCode, data);
         // Check that it is the SecondActivity with an OK result
         if (requestCode == SECOND_ACTIVITY_REQUEST_CODE) {
-            if (resultCode == 1) { //add
+            if (resultCode == 1 || resultCode == 2) { //add
                 // Get String data from Intent
                 String returnDate = data.getStringExtra("DATE");
                 String returnTime = data.getStringExtra("TIME");
                 int returnSystolic = data.getIntExtra("SYSTOLIC", 0);
                 int returnDiastolic = data.getIntExtra("DIASTOLIC", 0);
-                int returnHeartrate = data.getIntExtra("HEARTRATE", 0);
+                int returnHeartRate = data.getIntExtra("HEARTRATE", 0);
                 String returnComment = data.getStringExtra("COMMENT");
-
-                MeasurementItem newItem = new MeasurementItem(returnDate, returnTime, returnSystolic, returnDiastolic, returnHeartrate, returnComment);
-                mMeasurementList.add(newItem);
-                mMeasurementAdapter.notifyDataSetChanged();
-                saveMeasurementInFile();
-            }
-            if (resultCode == 2) { //edit
-                // Get String data from Intent and Store
-                clickedItem.newDate(data.getStringExtra("DATE"));
-                clickedItem.newTime(data.getStringExtra("TIME"));
-                clickedItem.newSystolicPressure(data.getIntExtra("SYSTOLIC",0));
-                clickedItem.newDiastolicPressure(data.getIntExtra("DIASTOLIC",0));
-                clickedItem.newHeartRate(data.getIntExtra("HEARTRATE",0));
-                clickedItem.newComment(data.getStringExtra("COMMENT"));
+                if(resultCode == 1){
+                    // add the new log data into the list
+                    MeasurementItem newItem = new MeasurementItem(returnDate, returnTime, returnSystolic, returnDiastolic, returnHeartRate, returnComment);
+                    mMeasurementList.add(newItem);
+                }
+                if(resultCode == 2){
+                    // save the all data that has be edited
+                    // update the clicked log with the new data
+                    clickedItem.newDate(returnDate);
+                    clickedItem.newTime(returnTime);
+                    clickedItem.newSystolicPressure(returnSystolic);
+                    clickedItem.newDiastolicPressure(returnDiastolic);
+                    clickedItem.newHeartRate(returnHeartRate);
+                    clickedItem.newComment(returnComment);
+                }
             }
             if (resultCode == 3){ //delete
                 mMeasurementList.remove(clickedItem);
             }
+            //let the adapter know there has been data added/deleted/edited
             mMeasurementAdapter.notifyDataSetChanged();
             saveMeasurementInFile();
         }

@@ -1,6 +1,7 @@
 package cc.shrestha.assignment1;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,11 +37,18 @@ public class MeasurementAdapter extends RecyclerView.Adapter<MeasurementAdapter.
     public void onBindViewHolder(MeasurementViewHolder holder, int position){
         MeasurementItem currentItem = mMeasurementList.get(position);
 
+        if(currentItem.getSystolicPressure() < 90 || currentItem.getSystolicPressure() > 140){
+            holder.mTextViewSystolic.setTextColor(Color.RED);
+        }
+        if(currentItem.getDiastolicPressure() < 60 || currentItem.getDiastolicPressure() > 90){
+            holder.mTextViewDiastolic.setTextColor(Color.RED);
+        }
+
         holder.mTextViewDate.setText(currentItem.getDate());
         holder.mTextViewTime.setText(currentItem.getTime());
-        holder.mTextViewSystolic.setText(""+currentItem.getSystolicPressure());
-        holder.mTextViewDiastolic.setText(""+currentItem.getDiastolicPressure());
-        holder.mTextViewHeart.setText(""+currentItem.getHeartRate());
+        holder.mTextViewSystolic.setText(currentItem.getSystolicPressure() + " mm Hg");
+        holder.mTextViewDiastolic.setText(currentItem.getDiastolicPressure() + " mm Hg");
+        holder.mTextViewHeart.setText(""+currentItem.getHeartRate() + " bpm");
         holder.mTextViewComment.setText(currentItem.getComment());
     }
 
